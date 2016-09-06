@@ -1,4 +1,7 @@
-﻿using System;
+// Copyright (c) 2016 robosoup
+// www.robosoup.com
+
+using System;
 using System.Globalization;
 using System.IO;
 using System.Text.RegularExpressions;
