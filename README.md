@@ -18,6 +18,6 @@ To query the model, simply select the load option and type in a word or phrase.
 
 For example, typing in “london” will return cities similar to London.
 
-You can also perform vector subtraction be appending a colon ":" to the word you want to negate. For example "france: paris italy" is the equivalent of saying "France is to Paris as Italy is to..." – this should return Rome.
+You can also perform vector subtraction by appending a colon ":" to the word you want to negate. For example "france: paris italy" is the equivalent of asking Athena "France is to Paris as Italy is to...?" – this should return Rome.
 
 Let me know how you get on...
