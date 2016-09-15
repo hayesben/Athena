@@ -1,51 +1,49 @@
-// Copyright (c) 2016 robosoup
+﻿// Copyright (c) 2016 robosoup
 // www.robosoup.com
 
 using System;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace Athena
 {
-    public class Cleaner
+    internal class Cleaner
     {
-        private const string input_file = "corpus.txt";
-        private const string output_file = "corpus_0.txt";
+        private const string InputFile = "corpus.txt";
+        private const string OutputFile = "corpus_0.txt";
 
         public Cleaner()
         {
             Console.WriteLine("> Cleaning corpus [{0:H:mm:ss}]", DateTime.Now);
             Console.WriteLine();
-            double length = new FileInfo(input_file).Length;
-            using (var sr = new StreamReader(input_file))
+            double length = new FileInfo(InputFile).Length;
+            using (var sr = new StreamReader(InputFile))
             {
-                using (var sw = new StreamWriter(output_file))
+                using (var sw = new StreamWriter(OutputFile))
                 {
-                    var line = string.Empty;
+                    string line;
                     while ((line = sr.ReadLine()) != null)
                     {
-                        line = ProcessLine(sw, line);
+                        ProcessLine(sw, line);
                         Console.Write("> Progress: {0:0.000%}  \r", sr.BaseStream.Position / length);
                     }
                 }
             }
+
             Console.WriteLine("\r\n");
         }
 
-        private string ProcessLine(StreamWriter sw, string line)
+        private static void ProcessLine(TextWriter sw, string line)
         {
             line = Regex.Replace(line, @"(([.?!][\r\n ])|[\r\n])+", "\r\n");
-            var array = line.Split(new char[] { (char)10, (char)13 }, StringSplitOptions.RemoveEmptyEntries);
-            for (var i = 0; i < array.Length; i++)
-            {
-                var text = CleanText(array[i]);
-                if (text.Length > 14) sw.WriteLine(text);
-            }
-            return line;
+            var array = line.Split(new[] { (char)10, (char)13 }, StringSplitOptions.RemoveEmptyEntries);
+            foreach (var text in array.Select(CleanText).Where(text => text.Length > 14))
+                sw.WriteLine(text);
         }
 
-        private string CleanText(string text)
+        private static string CleanText(string text)
         {
             // Pad and convert to lower case.
             text = " " + text.ToLower(CultureInfo.InvariantCulture) + " ";

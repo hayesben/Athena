@@ -5,13 +5,8 @@ using System;
 
 namespace Athena
 {
-    class Program
+    internal class Program
     {
-        public static void Main(string[] args)
-        {
-            new Program();
-        }
-
         public Program()
         {
             while (true)
@@ -26,12 +21,14 @@ namespace Athena
                     new Word2Vec();
                     break;
                 }
-                else if (key == ConsoleKey.T)
+
+                if (key == ConsoleKey.T)
                 {
                     new Word2Vec();
                     break;
                 }
-                else if (key == ConsoleKey.L) break;
+
+                if (key == ConsoleKey.L) break;
             }
 
             var model = new Model();
@@ -42,8 +39,14 @@ namespace Athena
                 Console.WriteLine("--------------");
                 foreach (var item in results)
                     Console.WriteLine("{0:0.00}  {1}", item.Value, item.Key);
+
                 Console.WriteLine();
             }
+        }
+
+        public static void Main(string[] args)
+        {
+            new Program();
         }
     }
 }

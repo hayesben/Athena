@@ -8,13 +8,13 @@ using System.Linq;
 
 namespace Athena
 {
-    class Word2Phrase
+    internal class Word2Phrase
     {
-        private const string input_file = "corpus_0.txt";
-        private const string output_file = "corpus_1.txt";
-        private const int threshold = 100;
-        private Dictionary<string, int> vocab = new Dictionary<string, int>();
-        private long train_words = 0;
+        private readonly Dictionary<string, int> _vocab = new Dictionary<string, int>();
+        private const string InputFile = "corpus_0.txt";
+        private const string OutputFile = "corpus_1.txt";
+        private const int Threshold = 100;      
+        private long _trainWords;
 
         public Word2Phrase()
         {
@@ -26,33 +26,35 @@ namespace Athena
         {
             Console.WriteLine("> Learning vocabulary [{0:H:mm:ss}]", DateTime.Now);
             Console.WriteLine();
-            double length = new FileInfo(input_file).Length;
-            using (var sr = new StreamReader(input_file))
+            double length = new FileInfo(InputFile).Length;
+            using (var sr = new StreamReader(InputFile))
             {
-                var line = string.Empty;
+                string line;
                 while ((line = sr.ReadLine()) != null)
                 {
-                    string last_word = null;
+                    string lastWord = null;
                     foreach (var word in line.Split(null as string[], StringSplitOptions.RemoveEmptyEntries))
                     {
-                        train_words++;
-                        if (!vocab.ContainsKey(word)) vocab.Add(word, 1);
-                        else vocab[word]++;
-                        if (last_word != null && last_word != "NUMERIC_VALUE" && word != "NUMERIC_VALUE")
+                        _trainWords++;
+                        if (!_vocab.ContainsKey(word)) _vocab.Add(word, 1);
+                        else _vocab[word]++;
+                        if ((lastWord != null) && (lastWord != "NUMERIC_VALUE") && (word != "NUMERIC_VALUE"))
                         {
-                            string bigram = last_word + "_" + word;
-                            if (!vocab.ContainsKey(bigram)) vocab.Add(bigram, 1);
-                            else vocab[bigram]++;
+                            var bigram = lastWord + "_" + word;
+                            if (!_vocab.ContainsKey(bigram)) _vocab.Add(bigram, 1);
+                            else _vocab[bigram]++;
                         }
-                        last_word = word;
+                        lastWord = word;
                     }
-                    if (vocab.Count > Model.MaxSize) Reduce();
+
+                    if (_vocab.Count > Model.MaxSize) Reduce();
                     Console.Write("> Progress: {0:0.000%}  \r", sr.BaseStream.Position / length);
                 }
             }
+
             Reduce();
             Console.WriteLine("\r\n");
-            Console.WriteLine("> Vocab size: {0}k", vocab.Count / 1000);
+            Console.WriteLine("> Vocab size: {0}k", _vocab.Count / 1000);
             Console.WriteLine();
         }
 
@@ -60,56 +62,58 @@ namespace Athena
         {
             Console.WriteLine("> Building phrases [{0:H:mm:ss}]", DateTime.Now);
             Console.WriteLine();
-            double length = new FileInfo(input_file).Length;
-            using (var sr = new StreamReader(input_file))
+            double length = new FileInfo(InputFile).Length;
+            using (var sr = new StreamReader(InputFile))
             {
-                using (var sw = new StreamWriter(output_file, false))
+                using (var sw = new StreamWriter(OutputFile, false))
                 {
-                    var line = string.Empty;
+                    string line;
                     while ((line = sr.ReadLine()) != null)
                     {
-                        double word_count = 0;
-                        double last_word_count = 0;
-                        var bigram_count = 0;
-                        string last_word = null;
+                        double wordCount = 0;
+                        double lastWordCount = 0;
+                        var bigramCount = 0;
+                        string lastWord = null;
 
                         foreach (var word in line.Split(null as string[], StringSplitOptions.RemoveEmptyEntries))
                         {
                             var oov = false;
-                            if (!vocab.ContainsKey(word)) oov = true;
-                            else word_count = vocab[word];
+                            if (!_vocab.ContainsKey(word)) oov = true;
+                            else wordCount = _vocab[word];
 
-                            if (last_word != null)
+                            if (lastWord != null)
                             {
-                                var bigram = last_word + "_" + word;
-                                if (!vocab.ContainsKey(bigram)) oov = true;
-                                else bigram_count = vocab[bigram];
+                                var bigram = lastWord + "_" + word;
+                                if (!_vocab.ContainsKey(bigram)) oov = true;
+                                else bigramCount = _vocab[bigram];
                             }
                             else oov = true;
 
                             double score = 0;
-                            if (!oov) score = ((bigram_count - Model.MinCount) / last_word_count / word_count) * train_words;
+                            if (!oov) score = (bigramCount - Model.MinCount) / lastWordCount / wordCount * _trainWords;
 
-                            if (score > threshold) sw.Write("_" + word);
+                            if (score > Threshold) sw.Write("_" + word);
                             else sw.Write(" " + word);
 
-                            last_word = word;
-                            last_word_count = word_count;
+                            lastWord = word;
+                            lastWordCount = wordCount;
                         }
+
                         sw.WriteLine();
                         sw.Flush();
                         Console.Write("> Progress: {0:0.000%}  \r", sr.BaseStream.Position / length);
                     }
                 }
             }
+
             Console.WriteLine("\r\n");
         }
 
         private void Reduce()
         {
-            var keys = vocab.Keys.ToList();
-            foreach (var key in keys)
-                if (vocab[key] < Model.MinCount) vocab.Remove(key);
+            var keys = _vocab.Keys.ToList();
+            foreach (var key in keys.Where(key => _vocab[key] < Model.MinCount))
+                _vocab.Remove(key);
         }
     }
 }
