@@ -15,7 +15,6 @@ namespace Athena
         public const int MinCount = 16;
         private const string InputFile = "corpus_1.txt";
         private const string ModelFile = "model.bin";
-
         private readonly Dictionary<string, string> _tokens = new Dictionary<string, string>();
 
         public Model()
