@@ -16,6 +16,7 @@ namespace Athena
 
         private const string input_file = "corpus_1.txt";
         private const string model_file = "model.bin";
+        private Dictionary<string, string> tokens = new Dictionary<string, string>();
 
         public class Item
         {
@@ -52,6 +53,10 @@ namespace Athena
         {
             if (File.Exists(model_file)) Load();
             else Learn();
+
+            var keys = from k in Keys where k.Contains('_') select k;
+            foreach (var key in keys)
+                tokens.Add(key.Replace('_', ' '), key);
         }
 
         public Dictionary<string, double> Nearest(string phrase, int count)
@@ -166,11 +171,18 @@ namespace Athena
             else return sim / (Math.Sqrt(len1) * Math.Sqrt(len2));
         }
 
+        public string[] Tokenise(string phrase)
+        {
+            foreach (var token in tokens)
+                phrase = phrase.Replace(token.Key, token.Value);
+            return phrase.Split(null as string[], StringSplitOptions.RemoveEmptyEntries);
+        }
+
         private double[] Vector(string phrase)
         {
             var count = 0;
             var vec = new double[Dims];
-            var keys = phrase.Split(null as string[], StringSplitOptions.RemoveEmptyEntries);
+            var keys = Tokenise(phrase);
             for (var w = 0; w < keys.Length; w++)
             {
                 var sgn = 1;
