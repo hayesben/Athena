@@ -13,18 +13,36 @@ namespace Athena
         public const int Dims = 64;
         public const int MaxSize = (int)1e6;
         public const int MinCount = 16;
+        private const string BigramFile = "bigrams.txt";
         private const string InputFile = "corpus_1.txt";
         private const string ModelFile = "model.bin";
-        private readonly Dictionary<string, string> _tokens = new Dictionary<string, string>();
+        private readonly Dictionary<string, string> _bigrams = new Dictionary<string, string>();
 
-        public Model()
+        public Model(bool learnVocab)
         {
-            if (File.Exists(ModelFile)) Load();
-            else Learn();
+            if (learnVocab) LearnVocab();
+            Load(learnVocab);
+            LoadBigrams();
+            if (learnVocab) Reduce();
 
             var keys = from k in Keys where k.Contains('_') select k;
             foreach (var key in keys)
-                _tokens.Add(key.Replace('_', ' '), key);
+                _bigrams.Add(key.Replace('_', ' '), key);
+        }
+
+        private void LoadBigrams()
+        {
+            if (!File.Exists(BigramFile)) return;
+            string line;
+            using (var sr = new StreamReader(BigramFile))
+                while ((line = sr.ReadLine()) != null)
+                    if (!this.ContainsKey(line))
+                    {
+                        var item = new Item() { Count = MinCount };
+                        item.Seed();
+                        Add(line, item);
+                        Console.WriteLine("added {0}", line);
+                    }
         }
 
         public Dictionary<string, double> Nearest(string phrase, int count)
@@ -77,7 +95,7 @@ namespace Athena
             }
         }
 
-        private void Learn()
+        private void LearnVocab()
         {
             Console.WriteLine("> Learning vocabulary [{0:H:mm:ss}]", DateTime.Now);
             Console.WriteLine();
@@ -91,12 +109,12 @@ namespace Athena
                         if (!ContainsKey(word)) Add(word, new Item { Count = 1 });
                         else this[word].Count++;
 
-                    if (Count > MaxSize) Reduce(MinCount);
+                    if (Count > MaxSize) Reduce();
                     Console.Write("> Progress: {0:0.000%}  \r", sr.BaseStream.Position / length);
                 }
             }
 
-            Reduce(MinCount);
+            Reduce();
             foreach (var item in this) item.Value.Seed();
 
             Console.WriteLine("\r\n");
@@ -104,8 +122,9 @@ namespace Athena
             Console.WriteLine();
         }
 
-        private void Load()
+        private void Load(bool learnVocab)
         {
+            if (!File.Exists(ModelFile)) return;
             Console.WriteLine("> Loading model [{0:H:mm:ss}]", DateTime.Now);
             Console.WriteLine();
             using (var br = new BinaryReader(File.Open(ModelFile, FileMode.Open)))
@@ -123,7 +142,7 @@ namespace Athena
                 {
                     var key = br.ReadString();
                     if (!ContainsKey(key)) Add(key, new Item());
-                    this[key].Load(br);
+                    this[key].Load(br, learnVocab);
                 }
             }
         }
@@ -148,7 +167,7 @@ namespace Athena
 
         public string[] Tokenise(string phrase)
         {
-            phrase = _tokens.Aggregate(phrase, (current, token) => current.Replace(token.Key, token.Value));
+            phrase = _bigrams.Aggregate(phrase, (current, token) => current.Replace(token.Key, token.Value));
             return phrase.Split(null as string[], StringSplitOptions.RemoveEmptyEntries);
         }
 
@@ -181,10 +200,10 @@ namespace Athena
             return vec;
         }
 
-        private void Reduce(int threshold)
+        private void Reduce()
         {
             var keys = Keys.ToList();
-            foreach (var key in from key in keys let item = this[key] where item.Count < threshold select key)
+            foreach (var key in from key in keys let item = this[key] where item.Count < MinCount select key)
                 Remove(key);
         }
 
@@ -192,12 +211,13 @@ namespace Athena
         {
             private static readonly Random Rnd = new Random();
             public double[] Context = new double[Dims];
-            public int Count;
             public double[] Location = new double[Dims];
+            public int Count;
 
-            public void Load(BinaryReader br)
+            public void Load(BinaryReader br, bool learnVocab)
             {
-                Count = br.ReadInt32();
+                if (learnVocab) br.ReadInt32();
+                else Count = br.ReadInt32();
                 for (var i = 0; i < Dims; i++) Location[i] = br.ReadDouble();
                 for (var i = 0; i < Dims; i++) Context[i] = br.ReadDouble();
             }

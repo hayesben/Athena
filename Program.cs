@@ -18,20 +18,20 @@ namespace Athena
                 {
                     new Cleaner();
                     new Word2Phrase();
-                    new Word2Vec();
+                    new Word2Vec(true);
                     break;
                 }
 
                 if (key == ConsoleKey.T)
                 {
-                    new Word2Vec();
+                    new Word2Vec(false);
                     break;
                 }
 
                 if (key == ConsoleKey.L) break;
             }
 
-            var model = new Model();
+            var model = new Model(false);
             while (true)
             {
                 Console.Write("? ");

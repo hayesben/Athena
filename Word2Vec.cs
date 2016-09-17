@@ -19,9 +19,9 @@ namespace Athena
         private string[] _roulette;
         private int _rouletteLength;
 
-        public Word2Vec()
+        public Word2Vec(bool learnVocab)
         {
-            _model = new Model();
+            _model = new Model(learnVocab);
             BuildRoulette();
             Train();
             _model.Save();

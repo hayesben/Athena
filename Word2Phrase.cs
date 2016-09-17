@@ -11,14 +11,16 @@ namespace Athena
     internal class Word2Phrase
     {
         private readonly Dictionary<string, int> _vocab = new Dictionary<string, int>();
+        private const string BigramFile = "bigrams.txt";
         private const string InputFile = "corpus_0.txt";
         private const string OutputFile = "corpus_1.txt";
-        private const int Threshold = 100;      
+        private const int Threshold = 100;
         private long _trainWords;
 
         public Word2Phrase()
         {
             Learn();
+            LoadBigrams();
             Save();
         }
 
@@ -56,6 +58,16 @@ namespace Athena
             Console.WriteLine("\r\n");
             Console.WriteLine("> Vocab size: {0}k", _vocab.Count / 1000);
             Console.WriteLine();
+        }
+
+        private void LoadBigrams()
+        {
+            if (!File.Exists(BigramFile)) return;
+            string line;
+            using (var sr = new StreamReader(BigramFile))
+                while ((line = sr.ReadLine()) != null)
+                    if (!_vocab.ContainsKey(line)) _vocab.Add(line, int.MaxValue);
+                    else _vocab[line] = int.MaxValue;
         }
 
         private void Save()
