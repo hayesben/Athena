@@ -21,9 +21,9 @@ namespace Athena
         public Model(bool learnVocab)
         {
             if (learnVocab) LearnVocab();
-            Load(learnVocab);
             LoadBigrams();
-            if (learnVocab) Reduce();
+            LoadModel(learnVocab);
+            Reduce();
 
             var keys = from k in Keys where k.Contains('_') select k;
             foreach (var key in keys)
@@ -41,7 +41,6 @@ namespace Athena
                         var item = new Item() { Count = MinCount };
                         item.Seed();
                         Add(line, item);
-                        Console.WriteLine("added {0}", line);
                     }
         }
 
@@ -122,7 +121,7 @@ namespace Athena
             Console.WriteLine();
         }
 
-        private void Load(bool learnVocab)
+        private void LoadModel(bool learnVocab)
         {
             if (!File.Exists(ModelFile)) return;
             Console.WriteLine("> Loading model [{0:H:mm:ss}]", DateTime.Now);
