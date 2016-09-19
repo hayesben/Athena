@@ -16,7 +16,7 @@ By selecting the training option, Athena will use the clean corpus file to creat
 
 To query the model, simply select the load option and type in a word or phrase.
 
-For example, typing in the word *write* will return related words and also the normal usage context.
+For example, typing in the word *write* will return related words and also its context.
 
 ```
 ? write
