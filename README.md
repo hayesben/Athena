@@ -18,7 +18,8 @@ To query the model, simply select the load option and type in a word or phrase.
 
 For example, typing in the word *write* will return related words and also the normal usage context.
 
-```? write
+```
+? write
 
 Neighbours                              Context
 -------------------                     -------------------
