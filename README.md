@@ -16,9 +16,26 @@ By selecting the training option, Athena will use the clean corpus file to creat
 
 To query the model, simply select the load option and type in a word or phrase.
 
-For example, typing in *london* will return cities similar to London.
+For example, typing in the word *write* will return related words and also the normal usage context.
 
-You can also perform vector subtraction by appending a colon to the end of the word you want to negate. For example *france: paris italy* is the equivalent of asking Athena *France is to Paris as Italy is to...?* – this should return Rome.
+```
+? write
+
+Neighbours                              Context
+-------------------                     -------------------
+1.00  write                             0.51  to
+0.80  compose                           0.40  would
+0.78  memorize                          0.39  could
+0.76  teach                             0.36  must
+0.76  publish                           0.33  might
+0.75  do_something                      0.29  does_not
+0.75  deliver                           0.28  may
+0.74  transcribe                        0.28  can
+0.73  submit                            0.27  did_not
+0.73  learn                             0.26  wouldnt
+```
+
+It is also perform vector subtraction by appending a colon to the end of the word you want to negate. For example *france: paris italy* is the equivalent of asking Athena *France is to Paris as Italy is to...?* – this should return Rome.
 
 Let me know how you get on...
 

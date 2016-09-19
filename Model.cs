@@ -44,8 +44,9 @@ namespace Athena
                     }
         }
 
-        public Dictionary<string, double> Nearest(string phrase, int count)
+        public KeyValuePair<string, double>[] Nearest(string phrase, int count, bool context)
         {
+            double sim;
             var vec = Vector(phrase);
             var bestd = new double[count];
             var bestw = new string[count];
@@ -54,7 +55,8 @@ namespace Athena
             foreach (var key in Keys)
             {
                 var tmp = this[key];
-                var sim = Similarity(vec, tmp.Location);
+                if (!context) sim = Similarity(vec, tmp.Location);
+                else sim = Similarity(vec, tmp.Context);
                 for (var c = 0; c < count; c++)
                     if (sim > bestd[c])
                     {
@@ -70,8 +72,8 @@ namespace Athena
                     }
             }
 
-            var result = new Dictionary<string, double>();
-            for (var i = 0; i < count; i++) result.Add(bestw[i], bestd[i]);
+            var result = new KeyValuePair<string, double>[count];
+            for (var i = 0; i < count; i++) result[i] = new KeyValuePair<string, double>(bestw[i], bestd[i]);
 
             return result;
         }

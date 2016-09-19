@@ -35,11 +35,22 @@ namespace Athena
             while (true)
             {
                 Console.Write("? ");
-                var results = model.Nearest(Console.ReadLine(), 10);
-                Console.WriteLine("--------------");
-                foreach (var item in results)
-                    Console.WriteLine("{0:0.00}  {1}", item.Value, item.Key);
-
+                var phrase = Console.ReadLine();
+                var neighbours = model.Nearest(phrase, 10, false);
+                var context = model.Nearest(phrase, 10, true);
+                Console.WriteLine();
+                Console.Write("Neighbours");
+                Console.CursorLeft = 40;
+                Console.WriteLine("Context");
+                Console.Write("-------------------");
+                Console.CursorLeft = 40;
+                Console.WriteLine("-------------------");
+                for (var i = 0; i < neighbours.Length; i++)
+                {
+                    Console.Write("{0:0.00}  {1}", neighbours[i].Value, neighbours[i].Key);
+                    Console.CursorLeft = 40;
+                    Console.WriteLine("{0:0.00}  {1}", context[i].Value, context[i].Key);
+                }
                 Console.WriteLine();
             }
         }
