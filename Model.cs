@@ -174,7 +174,6 @@ namespace Athena
 
         private double[] Vector(string phrase)
         {
-            var count = 0;
             var vec = new double[Dims];
             var keys = Tokenise(phrase);
             foreach (var k in keys)
@@ -186,17 +185,13 @@ namespace Athena
                     sgn = -1;
                     key = key.TrimEnd(':');
                 }
+
                 if (!ContainsKey(key)) continue;
 
-                count++;
                 var tmp = this[key].Location;
                 for (var i = 0; i < Dims; i++)
                     vec[i] += tmp[i] * sgn;
             }
-
-            if (count <= 1) return vec;
-
-            for (var i = 0; i < Dims; i++) vec[i] /= count;
 
             return vec;
         }
