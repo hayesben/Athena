@@ -8,7 +8,7 @@ To get started, load a large text corpus into the same directory as the compiled
 
 Athena then converts the corpus file to lower case, standardises diacritics and converts numerics to standard tokens - the resulting text will be saved as ***corpus_0.txt***.
 
-Next, Athena will identify recurring terms and concatenate these into phrases – the result will be saved as ***corpus_1.txt***. This process is heuristic and thus may omit some bigrams. To guarantee the occurrence of particular bigrams in your corpus it is possible to force addition - create a ***bigrams.txt*** file and populate each row a required bigram in the form of *hillary_clinton*, *donald_trump*, etc.
+Next, Athena will identify recurring terms and concatenate these into phrases – the result will be saved as ***corpus_1.txt***. This process is heuristic and thus may omit some bigrams. To guarantee the occurrence of particular bigrams in your corpus it is possible to force addition - create a ***bigrams.txt*** file and populate each row with a required bigram in the form of *hillary_clinton*, *donald_trump*, etc.
 
 The proceeding steps, which will take several hours to run, need only be executed once – now the training can begin.
 
