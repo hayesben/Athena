@@ -71,8 +71,7 @@ namespace Athena
                         lastWordCount = wordCount;
                         var seconds = (DateTime.Now - start).TotalSeconds + 1;
                         var rate = wordCount / seconds / 1000.0;
-                        Console.Write("> Progress: {0:0.000%}  words/sec: {1:0.00}k  \r", sr.BaseStream.Position / length,
-                            rate);
+                        Console.Write("> Progress: {0:0.000%}  words/sec: {1:0.00}k  \r", sr.BaseStream.Position / length, rate);
                     }
 
                     if (Console.KeyAvailable && (Console.ReadKey(true).Key == ConsoleKey.Escape))
@@ -117,20 +116,15 @@ namespace Athena
                     if (n != 0)
                     {
                         while (target == word) target = _roulette[_rnd.Next(_rouletteLength)];
-
                         label = 0;
                     }
 
                     double a = 0;
                     var targetVector = _model[target].Context;
                     for (var i = 0; i < Model.Dims; i++) a += hidden[i] * targetVector[i];
+                    if ((n == 0 && a > 5) || (n != 0 && a < -5)) continue;
 
-                    double g;
-                    if (a > 5) g = (label - 1) * Alpha;
-                    else if (a < -5) g = (label - 0) * Alpha;
-                    else g = (label - (a + 5) / 10.0) * Alpha;
-                    if (g == 0) continue;
-
+                    var g = (label - 1 / (1 + Math.Exp(-a))) * Alpha;
                     for (var i = 0; i < Model.Dims; i++)
                     {
                         error[i] += g * targetVector[i];
@@ -139,8 +133,7 @@ namespace Athena
                 }
 
                 foreach (var contextVector in contextVectors)
-                    for (var i = 0; i < Model.Dims; i++)
-                        contextVector[i] += error[i];
+                    for (var i = 0; i < Model.Dims; i++) contextVector[i] += error[i];
             }
         }
     }

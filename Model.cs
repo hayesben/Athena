@@ -30,6 +30,15 @@ namespace Athena
                 _bigrams.Add(key.Replace('_', ' '), key);
         }
 
+        public void FindText(string phrase)
+        {
+            string line;
+            using (var sr = new StreamReader(InputFile))
+                while ((line = sr.ReadLine()) != null)
+                    if (line.Contains(phrase)) Console.WriteLine(line);
+            Console.WriteLine();
+        }
+
         private void LoadBigrams()
         {
             if (!File.Exists(BigramFile)) return;
