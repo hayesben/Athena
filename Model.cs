@@ -12,7 +12,7 @@ namespace Athena
     {
         public const int Dims = 128;
         public const int MaxSize = (int)1e6;
-        public const int MinCount = 16;
+        public const int MinCount = 32;
         private const string BigramFile = "bigrams.txt";
         private const string InputFile = "corpus_1.txt";
         private const string ModelFile = "model.bin";
