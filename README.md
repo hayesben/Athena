@@ -4,7 +4,7 @@ Athena is a word embedding program based on the original paper *Efficient Estima
 
 This is a **C#** implementation, which provides a full environment to manage a large text corpus and subsequently learn and query word embeddings.
 
-To get started, select the ***Clean [C]*** option load a large text corpus into the same directory as the compiled application – I use a 6GB full text dump of Wikipedia - this file must be called ***corpus.txt***.
+To get started, select the ***Clean [C]*** option which will load a large text corpus file located in the same directory as the compiled application – I use a 6GB full text dump of Wikipedia - this file must be called ***corpus.txt***.
 
 Athena then converts the corpus file to lower case, standardises diacritics and converts numerics to standard tokens - the resulting text will be saved as ***corpus_0.txt***.
 
@@ -37,7 +37,7 @@ Neighbours                              Context
 
 It is also perform vector subtraction by appending a colon to the end of the word you want to negate. For example *france: paris italy* is the equivalent of asking Athena *France is to Paris as Italy is to...?* – this should return Rome.
 
-To carry out an exhaustive test in the model, select the ***Test [E]*** option. This will load comma seperated analogies from the ***model.csv*** file. These should be in the form of *athens,greece,baghdad,iraq*.
+To carry out an exhaustive test of the model, select the ***Test [E]*** option. This will load comma seperated analogies from the ***model.csv*** file. These should be in the form of *athens,greece,baghdad,iraq*.
 
 Let me know how you get on...
 
