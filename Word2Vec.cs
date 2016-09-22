@@ -43,7 +43,9 @@ namespace Athena
 
         private void Train()
         {
-            Console.WriteLine("> Training model [{0:H:mm:ss}]", DateTime.Now);
+            Console.WriteLine("Training model [{0:H:mm:ss}]", DateTime.Now);
+            Console.WriteLine();
+            Console.WriteLine("Hit 'Esc' to quit training early...");
             Console.WriteLine();
             var start = DateTime.Now;
             var lastWordCount = 0;
@@ -71,7 +73,7 @@ namespace Athena
                         lastWordCount = wordCount;
                         var seconds = (DateTime.Now - start).TotalSeconds + 1;
                         var rate = wordCount / seconds / 1000.0;
-                        Console.Write("> Progress: {0:0.000%}  words/sec: {1:0.00}k  \r", sr.BaseStream.Position / length, rate);
+                        Console.Write("Progress: {0:0.000%}  words/sec: {1:0.00}k  \r", sr.BaseStream.Position / length, rate);
                     }
 
                     if (Console.KeyAvailable && (Console.ReadKey(true).Key == ConsoleKey.Escape))

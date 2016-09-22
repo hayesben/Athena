@@ -41,6 +41,7 @@
     <Compile Include="Cleaner.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Model.cs" />
+    <Compile Include="Test.cs" />
     <Compile Include="Word2Phrase.cs" />
     <Compile Include="Word2Vec.cs" />
   </ItemGroup>

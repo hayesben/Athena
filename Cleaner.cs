@@ -16,7 +16,7 @@ namespace Athena
 
         public Cleaner()
         {
-            Console.WriteLine("> Cleaning corpus [{0:H:mm:ss}]", DateTime.Now);
+            Console.WriteLine("Cleaning corpus [{0:H:mm:ss}]", DateTime.Now);
             Console.WriteLine();
             double length = new FileInfo(InputFile).Length;
             using (var sr = new StreamReader(InputFile))
@@ -27,7 +27,7 @@ namespace Athena
                     while ((line = sr.ReadLine()) != null)
                     {
                         ProcessLine(sw, line);
-                        Console.Write("> Progress: {0:0.000%}  \r", sr.BaseStream.Position / length);
+                        Console.Write("Progress: {0:0.000%}  \r", sr.BaseStream.Position / length);
                     }
                 }
             }

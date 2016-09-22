@@ -87,9 +87,15 @@ namespace Athena
             return result;
         }
 
+        public string NearestWord(string phrase)
+        {
+            var results = Nearest(phrase, 1, false);
+            return results.First().Key;
+        }
+
         public void Save()
         {
-            Console.WriteLine("> Saving model [{0:H:mm:ss}]", DateTime.Now);
+            Console.WriteLine("Saving model [{0:H:mm:ss}]", DateTime.Now);
             Console.WriteLine();
             var back = string.Format("model_{0:yyyyMMddHHmm}.bak", DateTime.Now);
             if (File.Exists(ModelFile)) File.Move(ModelFile, back);
@@ -107,7 +113,7 @@ namespace Athena
 
         private void LearnVocab()
         {
-            Console.WriteLine("> Learning vocabulary [{0:H:mm:ss}]", DateTime.Now);
+            Console.WriteLine("Learning vocabulary [{0:H:mm:ss}]", DateTime.Now);
             Console.WriteLine();
             double length = new FileInfo(InputFile).Length;
             using (var sr = new StreamReader(InputFile))
@@ -120,7 +126,7 @@ namespace Athena
                         else this[word].Count++;
 
                     if (Count > MaxSize) Reduce();
-                    Console.Write("> Progress: {0:0.000%}  \r", sr.BaseStream.Position / length);
+                    Console.Write("Progress: {0:0.000%}  \r", sr.BaseStream.Position / length);
                 }
             }
 
@@ -128,14 +134,14 @@ namespace Athena
             foreach (var item in this) item.Value.Seed();
 
             Console.WriteLine("\r\n");
-            Console.WriteLine("> Vocab size: {0}k", Count / 1000);
+            Console.WriteLine("Vocab size: {0}k", Count / 1000);
             Console.WriteLine();
         }
 
         private void LoadModel(bool learnVocab)
         {
             if (!File.Exists(ModelFile)) return;
-            Console.WriteLine("> Loading model [{0:H:mm:ss}]", DateTime.Now);
+            Console.WriteLine("Loading model [{0:H:mm:ss}]", DateTime.Now);
             Console.WriteLine();
             using (var br = new BinaryReader(File.Open(ModelFile, FileMode.Open)))
             {
@@ -143,7 +149,7 @@ namespace Athena
                 var dims = br.ReadInt32();
                 if (dims != Dims)
                 {
-                    Console.WriteLine("> Dimensions don't match!");
+                    Console.WriteLine("Dimensions don't match!");
                     Console.WriteLine();
                     return;
                 }

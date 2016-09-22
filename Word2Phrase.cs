@@ -26,7 +26,7 @@ namespace Athena
 
         private void Learn()
         {
-            Console.WriteLine("> Learning vocabulary [{0:H:mm:ss}]", DateTime.Now);
+            Console.WriteLine("Learning vocabulary [{0:H:mm:ss}]", DateTime.Now);
             Console.WriteLine();
             double length = new FileInfo(InputFile).Length;
             using (var sr = new StreamReader(InputFile))
@@ -50,13 +50,13 @@ namespace Athena
                     }
 
                     if (_vocab.Count > Model.MaxSize) Reduce();
-                    Console.Write("> Progress: {0:0.000%}  \r", sr.BaseStream.Position / length);
+                    Console.Write("Progress: {0:0.000%}  \r", sr.BaseStream.Position / length);
                 }
             }
 
             Reduce();
             Console.WriteLine("\r\n");
-            Console.WriteLine("> Vocab size: {0}k", _vocab.Count / 1000);
+            Console.WriteLine("Vocab size: {0}k", _vocab.Count / 1000);
             Console.WriteLine();
         }
 
@@ -72,7 +72,7 @@ namespace Athena
 
         private void Save()
         {
-            Console.WriteLine("> Building phrases [{0:H:mm:ss}]", DateTime.Now);
+            Console.WriteLine("Building phrases [{0:H:mm:ss}]", DateTime.Now);
             Console.WriteLine();
             double length = new FileInfo(InputFile).Length;
             using (var sr = new StreamReader(InputFile))
@@ -113,7 +113,7 @@ namespace Athena
 
                         sw.WriteLine();
                         sw.Flush();
-                        Console.Write("> Progress: {0:0.000%}  \r", sr.BaseStream.Position / length);
+                        Console.Write("Progress: {0:0.000%}  \r", sr.BaseStream.Position / length);
                     }
                 }
             }
