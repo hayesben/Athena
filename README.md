@@ -4,7 +4,7 @@ Athena is a word embedding program based on the original paper *Efficient Estima
 
 This is a **C#** implementation, which provides a full environment to manage a large text corpus and subsequently learn and query word embeddings.
 
-To get started, select the ***Clean [C]*** option which will load a large text corpus file located in the same directory as the compiled application – I use a 6GB full text dump of Wikipedia - this file must be called ***corpus.txt***.
+To get started, select the ***Load [L]*** option which will load your corpus file located in the same directory as the compiled application – I use a 6GB full text dump of Wikipedia - this file must be called ***corpus.txt***.
 
 Athena then converts the corpus file to lower case, standardises diacritics and converts numerics to standard tokens - the resulting text will be saved as ***corpus_0.txt***.
 
@@ -12,7 +12,7 @@ Next, Athena will identify recurring terms and concatenate these into phrases �
 
 The proceeding steps, which will take several hours to run, need only be executed once – now the training can begin.
 
-By selecting the ***Train [T]*** option, Athena will use the clean corpus file to create a word embedding model – this will be stored in ***model.bin***. If training has taken place before, Athena will attempt to load the existing model and continue training from the current state.  If not, Athena will learn the vocabulary and build a seeded, but untrained, model file and start training from here.
+By selecting the ***Train [T]*** option, Athena will use the cleaned corpus file to generate a word embedding model – this will be stored in ***model.bin***. If training has taken place before, Athena will attempt to load the existing model and continue training from the current state.  If not, Athena will learn the vocabulary and build a seeded, but untrained, model file and start training from here.
 
 To query the model, simply select the ***Query [Q]*** option and type in a word or phrase.
 

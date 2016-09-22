@@ -2,11 +2,7 @@
 // www.robosoup.com
 
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Athena
 {
@@ -37,6 +33,7 @@ namespace Athena
             string line;
             double count = 0;
             var correct = 0;
+            var start = DateTime.Now;
             using (var sr = new StreamReader(TestFile))
                 while ((line = sr.ReadLine()) != null)
                 {
@@ -44,7 +41,9 @@ namespace Athena
                     var keys = line.Split(',');
                     var phrase = string.Format("{0}: {1} {2}", keys[0], keys[1], keys[2]);
                     if (model.NearestWord(phrase) == keys[3]) correct++;
-                    Console.Write("Progress: {0:0.000%}  \r", count / total);
+                    var seconds = (DateTime.Now - start).TotalSeconds + 1;
+                    var rate = count / seconds;
+                    Console.Write("Progress: {0:0.000%}  items/sec: {1:0.00}  \r", count / total, rate);
                     if (Console.KeyAvailable && (Console.ReadKey(true).Key == ConsoleKey.Escape)) break;
                 }
 
