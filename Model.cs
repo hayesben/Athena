@@ -10,7 +10,7 @@ namespace Athena
 {
     internal class Model : Dictionary<string, Model.Item>
     {
-        public const int Dims = 64;
+        public const int Dims = 128;
         public const int MaxSize = (int)1e6;
         public const int MinCount = 16;
         private const string BigramFile = "bigrams.txt";
