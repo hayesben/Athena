@@ -13,6 +13,8 @@ namespace Athena
     {
         private const string InputFile = "corpus.txt";
         private const string OutputFile = "corpus_0.txt";
+        private const string FinalFile = "corpus_1.txt";
+        private const string IngestFile = "ingest.txt";
 
         public Cleaner()
         {
@@ -82,6 +84,56 @@ namespace Athena
             // Remove multiple spaces.
             text = Regex.Replace(text, @"\s+", " ").Trim();
             return text;
+        }
+
+        public static void Ingest(Model model)
+        {
+            using (var sr = new StreamReader(IngestFile))
+            {
+                using (var sw = new StreamWriter(InputFile, true))
+                {
+                    string line;
+                    while ((line = sr.ReadLine()) != null)
+                        sw.WriteLine(line);
+                    sw.WriteLine("===eod===");
+                }
+            }
+
+            var start = new FileInfo(OutputFile).Length;
+            using (var sr = new StreamReader(IngestFile))
+            {
+                using (var sw = new StreamWriter(OutputFile, true))
+                {
+                    string line;
+                    while ((line = sr.ReadLine()) != null)
+                        ProcessLine(sw, line);
+                    sw.WriteLine("END_OF_DOCUMENT");
+                }
+            }
+
+            var stream = new FileStream(OutputFile, FileMode.Open);
+            stream.Seek(start, SeekOrigin.Begin);
+            using (var sr = new StreamReader(stream))
+            {
+                using (var sw = new StreamWriter(FinalFile, true))
+                {
+                    string line;
+                    while ((line = sr.ReadLine()) != null)
+                    {
+                        string last_word = null;
+                        foreach (var word in line.Split(null as string[], StringSplitOptions.RemoveEmptyEntries))
+                        {
+                            string bigram = last_word + "_" + word;
+                            if (model.ContainsKey(bigram)) sw.Write("_" + word);
+                            else sw.Write(" " + word);
+
+                            last_word = word;
+                        }
+                        sw.WriteLine();
+                    }
+                }
+            }
+            File.Delete(IngestFile);
         }
     }
 }
