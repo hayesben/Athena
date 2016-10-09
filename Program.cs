@@ -1,14 +1,21 @@
 // Copyright (c) 2016 robosoup
 // www.robosoup.com
 
+using Cudafy;
+using Cudafy.Host;
+using Cudafy.Translator;
 using System;
 
 namespace Athena
 {
     internal class Program
     {
+        public const int DeviceID = 0;
+
         public Program()
         {
+            InitialiseGPU();
+
             while (true)
             {
                 Console.Write("Load [L], Train [T], Test [E] or Query [Q] ");
@@ -54,6 +61,38 @@ namespace Athena
                     }
                 }
             }
+        }
+
+        private void InitialiseGPU()
+        {
+            try
+            {
+                CudafyModes.Target = eGPUType.Cuda;
+                Console.WriteLine("Cuda devices");
+                Console.WriteLine("------------");
+                foreach (GPGPUProperties prop in CudafyHost.GetDeviceProperties(eGPUType.Cuda, false))
+                    Console.WriteLine("Device {0} - {1} {2}",
+                        prop.DeviceId,
+                        prop.Name.Trim(),
+                        prop.DeviceId == DeviceID ? "---Selected---" : "");
+            }
+            catch
+            {
+                Console.WriteLine("None found");
+                CudafyModes.Target = eGPUType.OpenCL;
+            }
+            Console.WriteLine();
+
+            Console.WriteLine("OpenCL devices");
+            Console.WriteLine("--------------");
+            foreach (GPGPUProperties prop in CudafyHost.GetDeviceProperties(eGPUType.OpenCL, false))
+                Console.WriteLine("Device {0} - {1} {2}",
+                    prop.DeviceId,
+                    prop.Name.Trim(),
+                    prop.DeviceId == DeviceID && CudafyModes.Target == eGPUType.OpenCL ? "---Selected---" : "");
+            Console.WriteLine("\r\n");
+
+            CudafyTranslator.Language = CudafyModes.Target == eGPUType.OpenCL ? eLanguage.OpenCL : eLanguage.Cuda;
         }
 
         public static void Main(string[] args)

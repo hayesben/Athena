@@ -203,7 +203,7 @@ namespace Athena
 
                 if (!ContainsKey(key)) continue;
 
-                var tmp = this[key].Location;
+                var tmp = this[key].Normal;
                 for (var i = 0; i < Dims; i++)
                     vec[i] += tmp[i] * sgn;
             }
@@ -224,6 +224,20 @@ namespace Athena
             public double[] Context = new double[Dims];
             public double[] Location = new double[Dims];
             public int Count;
+            public int ID;
+
+            public double[] Normal
+            {
+                get
+                {
+                    double len = 0;
+                    for (var i = 0; i < Dims; i++) len += Location[i] * Location[i];
+                    len = Math.Sqrt(len);
+                    var normal = new double[Dims];
+                    for (var i = 0; i < Dims; i++) normal[i] = Location[i] / len;
+                    return normal;
+                }
+            }
 
             public void Load(BinaryReader br, bool learnVocab)
             {
