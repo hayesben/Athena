@@ -4,7 +4,7 @@ Athena is a word embedding program based on the original paper *Efficient Estima
 
 This is a GPU accelerated **C#** implementation, which provides a full environment to manage a large text corpus and subsequently learn and query word embeddings. To the best of my knowledge, this is the only implementation of word2vec on a GPU using C#.
 
-Athena works with either CUDA or OpenCL and will auto-select depending on your hardware. A reference to Cudafy.NET is required, which can be downloaded from [GitHub](https://github.com/svn2github/cudafy).  
+Athena works with either CUDA or OpenCL devices and will auto-select depending on your hardware. A reference to Cudafy.NET is required, which can be downloaded from [GitHub](https://github.com/svn2github/cudafy).  
 
 To get started, select the ***Load [L]*** option which will load your corpus file located in the same directory as the compiled application – I use a 6GB full text dump of Wikipedia - this file must be called ***corpus.txt***.
 
