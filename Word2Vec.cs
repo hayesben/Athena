@@ -18,7 +18,7 @@ namespace Athena
 
         private const string InputFile = "corpus_1.txt";
         private const double Sample = 1e-8;
-        private const float Alpha = 0.05f;
+        private const float Alpha = 0.01f;
         private const int Sentences = 10;
         private const int Positions = 64;
         private const int Window = 5;
