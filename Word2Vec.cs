@@ -13,24 +13,27 @@ namespace Athena
 {
     internal class Word2Vec
     {
+        // Start hyperparameters.
+        private const float BaseLearningRate = 0.05f;
+        private const double SubSample = 1e-8;
+        private const int Iterations = 5;
+        private const int NegativeSamples = 5;
+        private const int SentenceBatches = 10;
+        private const int SentencePositions = 64;
+        private const int Window = 5;
+        // End hyperparameters.
+
         private readonly Model _model;
         private readonly Random _rnd = new Random();
-
         private const string InputFile = "corpus_1.txt";
-        private const double Sample = 1e-8;
-        private const float Alpha = 0.01f;
-        private const int Sentences = 10;
-        private const int Positions = 64;
-        private const int Window = 5;
-        private const int Negs = 5;
-
-        private GPGPU _gpu;
-        private int[,] tokens = new int[Sentences, 1 + Positions];
+        private int[,] _tokens = new int[SentenceBatches, 1 + SentencePositions];
+        private float _learningRate = BaseLearningRate;
         private float[,] _gpuContext;
         private float[,] _gpuLocation;
         private int[] _gpuRoulette;
         private int _rouletteLength;
         private int _sentence;
+        private GPGPU _gpu;
 
         public Word2Vec(bool learnVocab)
         {
@@ -38,12 +41,15 @@ namespace Athena
             _gpu = CudafyHost.GetDevice(CudafyModes.Target, Program.DeviceID);
             _gpu.LoadModule(CudafyTranslator.Cudafy(_gpu.GetArchitecture()));
             _gpu.FreeAll();
-
             CopyToGPU();
-            Train();
-            CopyFromGPU();
 
-            _model.Save();
+            for (var iteration = 0; iteration < Iterations; iteration++)
+            {
+                Train(iteration);
+                CopyFromGPU();
+                _model.Save();
+            }
+
             _gpu.FreeAll();
         }
 
@@ -60,8 +66,8 @@ namespace Athena
                 var context = item.Value.Context;
                 for (var i = 0; i < Model.Dims; i++)
                 {
-                    arrayContext[id, i] = (float)context[i];
-                    arrayLocation[id, i] = (float)location[i];
+                    arrayContext[id, i] = context[i];
+                    arrayLocation[id, i] = location[i];
                 }
                 id++;
             }
@@ -106,7 +112,7 @@ namespace Athena
             }
         }
 
-        private void Train()
+        private void Train(int iteration)
         {
             Console.WriteLine("Training model [{0:H:mm:ss}]", DateTime.Now);
             Console.WriteLine();
@@ -131,13 +137,15 @@ namespace Athena
                         sentence.Add(word);
                     }
 
-                    if (sentence.Count > 1) ProcessSentence(sentence);
+                    if (sentence.Count > 1) ProcessSentence(sentence, _learningRate);
 
                     if (checkpoint < DateTime.Now)
                     {
+                        var progress = (float)(sr.BaseStream.Position / length);
                         var seconds = (DateTime.Now - start).TotalSeconds + 1;
                         var rate = wordCount / seconds / 1000.0;
-                        Console.Write("Progress: {0:0.000%}  words/sec: {1:0.00}k  \r", sr.BaseStream.Position / length, rate);
+                        _learningRate = BaseLearningRate - (iteration * BaseLearningRate / Iterations) - (progress * BaseLearningRate / Iterations);
+                        Console.Write("Progress: {0:0.000%}  words/sec: {1:0.000}k  learning rate: {2:0.000}  \r", progress, rate, _learningRate);
                         checkpoint = DateTime.Now.AddSeconds(1);
                     }
 
@@ -147,34 +155,34 @@ namespace Athena
             Console.WriteLine("\r\n");
         }
 
-        private void ProcessSentence(IReadOnlyList<string> sentence)
+        private void ProcessSentence(IReadOnlyList<string> sentence, float learningRate)
         {
             var position = 1;
             foreach (var word in sentence)
             {
                 var tmp = _model[word];
-                if (_rnd.NextDouble() > 1 - Math.Sqrt(Sample * tmp.Count)) continue;
-                tokens[_sentence, position] = tmp.ID;
+                if (_rnd.NextDouble() > 1 - Math.Sqrt(SubSample * tmp.Count)) continue;
+                _tokens[_sentence, position] = tmp.ID;
                 position++;
-                if (position == Positions) break;
+                if (position == SentencePositions) break;
             }
-            tokens[_sentence, 0] = position - 1;
+            _tokens[_sentence, 0] = position - 1;
 
             _sentence++;
-            if (_sentence == Sentences)
+            if (_sentence == SentenceBatches)
             {
                 _sentence = 0;
-                _gpu.CopyToConstantMemory(tokens, Tokens);
-                _gpu.Launch(Sentences * Positions, Model.Dims).Execute(_gpuContext, _gpuLocation, _gpuRoulette, _rouletteLength, _rnd.Next(99999));
-                tokens = new int[Sentences, 1 + Positions];
+                _gpu.CopyToConstantMemory(_tokens, Tokens);
+                _gpu.Launch(SentenceBatches * SentencePositions, Model.Dims).Execute(_gpuContext, _gpuLocation, _gpuRoulette, _rouletteLength, _rnd.Next(99999), learningRate);
+                _tokens = new int[SentenceBatches, 1 + SentencePositions];
             }
         }
 
         [Cudafy]
-        public static int[,] Tokens = new int[Sentences, 1 + Positions];
+        public static int[,] Tokens = new int[SentenceBatches, 1 + SentencePositions];
 
         [Cudafy]
-        public static void Execute(GThread thread, float[,] context, float[,] location, int[] roulette, int rouletteLength, int seed)
+        public static void Execute(GThread thread, float[,] context, float[,] location, int[] roulette, int rouletteLength, int seed, float learningRate)
         {
             float[] activation = thread.AllocateShared<float>("activation", Model.Dims);
             float[] error = thread.AllocateShared<float>("error", Model.Dims);
@@ -183,8 +191,8 @@ namespace Athena
             int[] crop = thread.AllocateShared<int>("crop", 1);
             int[] negID = thread.AllocateShared<int>("negID", 1);
 
-            int sentence = thread.blockIdx.x / Positions;
-            int position = thread.blockIdx.x - sentence * Positions;
+            int sentence = thread.blockIdx.x / SentencePositions;
+            int position = thread.blockIdx.x - sentence * SentencePositions;
             int dim = thread.threadIdx.x;
 
             int len = Tokens[sentence, 0];
@@ -214,7 +222,7 @@ namespace Athena
 
                 error[dim] = 0;
 
-                for (int n = 0; n <= Negs; n++)
+                for (int n = 0; n <= NegativeSamples; n++)
                 {
                     if (dim == 0)
                     {
@@ -243,7 +251,7 @@ namespace Athena
                         {
                             int label = 0;
                             if (n == 0) label = 1;
-                            g[0] = (label - 1 / (1 + GMath.Exp(-activation[0]))) * Alpha;
+                            g[0] = (label - 1 / (1 + GMath.Exp(-activation[0]))) * learningRate;
                         }
                         thread.SyncThreads();
 

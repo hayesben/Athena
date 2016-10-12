@@ -163,11 +163,11 @@ namespace Athena
             }
         }
 
-        private static double Similarity(double[] vec1, double[] vec2)
+        private static float Similarity(float[] vec1, float[] vec2)
         {
-            double sim = 0;
-            double len1 = 0;
-            double len2 = 0;
+            float sim = 0;
+            float len1 = 0;
+            float len2 = 0;
             var dims = vec1.Length;
             for (var i = 0; i < dims; i++)
             {
@@ -178,7 +178,7 @@ namespace Athena
 
             if ((len1 == 0) || (len2 == 0)) return 0;
 
-            return sim / (Math.Sqrt(len1) * Math.Sqrt(len2));
+            return sim / (float)(Math.Sqrt(len1) * Math.Sqrt(len2));
         }
 
         public string[] Tokenise(string phrase)
@@ -187,9 +187,9 @@ namespace Athena
             return phrase.Split(null as string[], StringSplitOptions.RemoveEmptyEntries);
         }
 
-        private double[] Vector(string phrase)
+        private float[] Vector(string phrase)
         {
-            var vec = new double[Dims];
+            var vec = new float[Dims];
             var keys = Tokenise(phrase);
             foreach (var k in keys)
             {
@@ -221,19 +221,19 @@ namespace Athena
         public class Item
         {
             private static readonly Random Rnd = new Random();
-            public double[] Context = new double[Dims];
-            public double[] Location = new double[Dims];
+            public float[] Context = new float[Dims];
+            public float[] Location = new float[Dims];
             public int Count;
             public int ID;
 
-            public double[] Normal
+            public float[] Normal
             {
                 get
                 {
-                    double len = 0;
+                    float len = 0;
                     for (var i = 0; i < Dims; i++) len += Location[i] * Location[i];
-                    len = Math.Sqrt(len);
-                    var normal = new double[Dims];
+                    len = (float)Math.Sqrt(len);
+                    var normal = new float[Dims];
                     for (var i = 0; i < Dims; i++) normal[i] = Location[i] / len;
                     return normal;
                 }
@@ -243,8 +243,8 @@ namespace Athena
             {
                 if (learnVocab) br.ReadInt32();
                 else Count = br.ReadInt32();
-                for (var i = 0; i < Dims; i++) Location[i] = br.ReadDouble();
-                for (var i = 0; i < Dims; i++) Context[i] = br.ReadDouble();
+                for (var i = 0; i < Dims; i++) Location[i] =br.ReadSingle();
+                for (var i = 0; i < Dims; i++) Context[i] = br.ReadSingle();
             }
 
             public void Save(BinaryWriter bw)
@@ -258,8 +258,8 @@ namespace Athena
             {
                 for (var i = 0; i < Dims; i++)
                 {
-                    Context[i] = 0.5 - Rnd.NextDouble();
-                    Location[i] = 0.5 - Rnd.NextDouble();
+                    Context[i] = (float)(0.5 - Rnd.NextDouble());
+                    Location[i] = (float)(0.5 - Rnd.NextDouble());
                 }
             }
         }
