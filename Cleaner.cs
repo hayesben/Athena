@@ -5,6 +5,7 @@ using System;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Athena
@@ -134,6 +135,59 @@ namespace Athena
                 }
             }
             File.Delete(IngestFile);
+        }
+
+        public static void ReplaceInFile(string pattern)
+        {
+            var checkpoint = DateTime.Now;
+            double length = new FileInfo(FinalFile).Length;
+            byte[] find = Encoding.ASCII.GetBytes(pattern);
+            byte[] replace = Encoding.ASCII.GetBytes(pattern.Replace(' ', '_'));
+            byte[] buffer = new byte[find.Length];
+
+            Console.WriteLine("Replacing text [{0:H:mm:ss}]", DateTime.Now);
+            Console.WriteLine();
+
+            using (Stream stream = File.Open(FinalFile, FileMode.Open))
+            {
+                using (BufferedStream bs = new BufferedStream(stream, find.Length))
+                {
+                    int i;
+                    while ((i = bs.Read(buffer, 0, find.Length)) == find.Length)
+                    {
+                        if (find.SequenceEqual(buffer))
+                        {
+                            bs.Position -= find.Length;
+                            bs.Write(replace, 0, find.Length);
+                        }
+                        else bs.Position -= find.Length - Pad(buffer, find);
+
+                        if (checkpoint < DateTime.Now)
+                        {
+                            Console.Write("Progress: {0:0.000%}  \r", bs.Position / length);
+                            checkpoint = DateTime.Now.AddSeconds(1);
+                        }
+                    }
+                }
+            }
+            Console.WriteLine("Finish [{0:H:mm:ss}]", DateTime.Now);
+            Console.WriteLine();
+        }
+
+        private static int Pad(byte[] buffer, byte[] find)
+        {
+            int i = 1;
+            while (i < buffer.Length)
+            {
+                int n = buffer.Length - i;
+                byte[] aux1 = new byte[n];
+                byte[] aux2 = new byte[n];
+                Array.Copy(buffer, i, aux1, 0, n);
+                Array.Copy(find, aux2, n);
+                if (aux1.SequenceEqual(aux2)) return i;
+                i++;
+            }
+            return i;
         }
     }
 }
