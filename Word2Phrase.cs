@@ -10,11 +10,8 @@ namespace Athena
 {
     internal class Word2Phrase
     {
-        private readonly Dictionary<string, int> _vocab = new Dictionary<string, int>();
-        private const string BigramFile = "bigrams.txt";
-        private const string InputFile = "corpus_0.txt";
-        private const string OutputFile = "corpus_1.txt";
         private const int Threshold = 100;
+        private readonly Dictionary<string, int> _vocab = new Dictionary<string, int>();
         private long _trainWords;
 
         public Word2Phrase()
@@ -28,8 +25,8 @@ namespace Athena
         {
             Console.WriteLine("Learning vocabulary [{0:H:mm:ss}]", DateTime.Now);
             Console.WriteLine();
-            double length = new FileInfo(InputFile).Length;
-            using (var sr = new StreamReader(InputFile))
+            double length = new FileInfo(Program.Path_Corpus_0).Length;
+            using (var sr = new StreamReader(Program.Path_Corpus_0))
             {
                 string line;
                 while ((line = sr.ReadLine()) != null)
@@ -62,9 +59,9 @@ namespace Athena
 
         private void LoadBigrams()
         {
-            if (!File.Exists(BigramFile)) return;
+            if (!File.Exists(Program.Path_Bigrams)) return;
             string line;
-            using (var sr = new StreamReader(BigramFile))
+            using (var sr = new StreamReader(Program.Path_Bigrams))
                 while ((line = sr.ReadLine()) != null)
                     if (!_vocab.ContainsKey(line)) _vocab.Add(line, int.MaxValue);
                     else _vocab[line] = int.MaxValue;
@@ -74,10 +71,10 @@ namespace Athena
         {
             Console.WriteLine("Building phrases [{0:H:mm:ss}]", DateTime.Now);
             Console.WriteLine();
-            double length = new FileInfo(InputFile).Length;
-            using (var sr = new StreamReader(InputFile))
+            double length = new FileInfo(Program.Path_Corpus_0).Length;
+            using (var sr = new StreamReader(Program.Path_Corpus_0))
             {
-                using (var sw = new StreamWriter(OutputFile, false))
+                using (var sw = new StreamWriter(Program.Path_Corpus_1, false))
                 {
                     string line;
                     while ((line = sr.ReadLine()) != null)

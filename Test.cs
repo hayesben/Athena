@@ -20,7 +20,6 @@ namespace Athena
 
     internal class Test
     {
-        private const string TestFile = "test.csv";
         private Model model;
         private int threadCount = 0;
         private int correct;
@@ -39,7 +38,7 @@ namespace Athena
 
             string line;
             var items = new List<string>();
-            using (StreamReader r = new StreamReader(TestFile))
+            using (StreamReader r = new StreamReader(Program.Path_Test))
                 while ((line = r.ReadLine()) != null)
                     items.Add(line);
             var total = items.Count;

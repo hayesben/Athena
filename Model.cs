@@ -13,9 +13,7 @@ namespace Athena
         public const int Dims = 128;
         public const int MaxSize = (int)1e6;
         public const int MinCount = 32;
-        private const string BigramFile = "bigrams.txt";
-        private const string InputFile = "corpus_1.txt";
-        private const string ModelFile = "model.bin";
+
         private readonly Dictionary<string, string> _bigrams = new Dictionary<string, string>();
 
         public Model(bool learnVocab)
@@ -33,7 +31,7 @@ namespace Athena
         public void FindText(string phrase)
         {
             string line;
-            using (var sr = new StreamReader(InputFile))
+            using (var sr = new StreamReader(Program.Path_Corpus_1))
                 while ((line = sr.ReadLine()) != null)
                     if (line.Contains(phrase)) Console.WriteLine(line);
             Console.WriteLine();
@@ -41,9 +39,9 @@ namespace Athena
 
         private void LoadBigrams()
         {
-            if (!File.Exists(BigramFile)) return;
+            if (!File.Exists(Program.Path_Bigrams)) return;
             string line;
-            using (var sr = new StreamReader(BigramFile))
+            using (var sr = new StreamReader(Program.Path_Bigrams))
                 while ((line = sr.ReadLine()) != null)
                     if (!this.ContainsKey(line))
                     {
@@ -97,9 +95,9 @@ namespace Athena
         {
             Console.WriteLine("Saving model [{0:H:mm:ss}]", DateTime.Now);
             Console.WriteLine();
-            var back = string.Format("model_{0:yyyyMMddHHmm}.bak", DateTime.Now);
-            if (File.Exists(ModelFile)) File.Move(ModelFile, back);
-            using (var bw = new BinaryWriter(File.Open(ModelFile, FileMode.Create)))
+            var back = string.Format("{0}_{1:yyyyMMddHHmm}.bin", Program.Path_Model.Remove(Program.Path_Model.Length - 4), DateTime.Now);
+            if (File.Exists(Program.Path_Model)) File.Move(Program.Path_Model, back);
+            using (var bw = new BinaryWriter(File.Open(Program.Path_Model, FileMode.Create)))
             {
                 bw.Write(Count);
                 bw.Write(Dims);
@@ -115,8 +113,8 @@ namespace Athena
         {
             Console.WriteLine("Learning vocabulary [{0:H:mm:ss}]", DateTime.Now);
             Console.WriteLine();
-            double length = new FileInfo(InputFile).Length;
-            using (var sr = new StreamReader(InputFile))
+            double length = new FileInfo(Program.Path_Corpus_1).Length;
+            using (var sr = new StreamReader(Program.Path_Corpus_1))
             {
                 string line;
                 while ((line = sr.ReadLine()) != null)
@@ -140,10 +138,10 @@ namespace Athena
 
         private void LoadModel(bool learnVocab)
         {
-            if (!File.Exists(ModelFile)) return;
+            if (!File.Exists(Program.Path_Model)) return;
             Console.WriteLine("Loading model [{0:H:mm:ss}]", DateTime.Now);
             Console.WriteLine();
-            using (var br = new BinaryReader(File.Open(ModelFile, FileMode.Open)))
+            using (var br = new BinaryReader(File.Open(Program.Path_Model, FileMode.Open)))
             {
                 var words = br.ReadInt32();
                 var dims = br.ReadInt32();

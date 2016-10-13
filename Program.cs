@@ -12,6 +12,14 @@ namespace Athena
     {
         public const int DeviceID = 0;
 
+        public const string Path_Bigrams = @".\Data\bigrams.txt";
+        public const string Path_Corpus = @".\Data\corpus.txt";
+        public const string Path_Corpus_0 = @".\Data\corpus_0.txt";
+        public const string Path_Corpus_1 = @".\Data\corpus_1.txt";
+        public const string Path_Ingest = @".\Data\ingest.txt";
+        public const string Path_Model = @".\Data\model.bin";
+        public const string Path_Test = @".\Data\test.csv";
+
         public Program()
         {
             InitialiseGPU();

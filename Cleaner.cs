@@ -12,19 +12,14 @@ namespace Athena
 {
     internal class Cleaner
     {
-        private const string InputFile = "corpus.txt";
-        private const string OutputFile = "corpus_0.txt";
-        private const string FinalFile = "corpus_1.txt";
-        private const string IngestFile = "ingest.txt";
-
         public Cleaner()
         {
             Console.WriteLine("Cleaning corpus [{0:H:mm:ss}]", DateTime.Now);
             Console.WriteLine();
-            double length = new FileInfo(InputFile).Length;
-            using (var sr = new StreamReader(InputFile))
+            double length = new FileInfo(Program.Path_Corpus).Length;
+            using (var sr = new StreamReader(Program.Path_Corpus))
             {
-                using (var sw = new StreamWriter(OutputFile))
+                using (var sw = new StreamWriter(Program.Path_Corpus_0))
                 {
                     string line;
                     while ((line = sr.ReadLine()) != null)
@@ -89,9 +84,9 @@ namespace Athena
 
         public static void Ingest(Model model)
         {
-            using (var sr = new StreamReader(IngestFile))
+            using (var sr = new StreamReader(Program.Path_Ingest))
             {
-                using (var sw = new StreamWriter(InputFile, true))
+                using (var sw = new StreamWriter(Program.Path_Corpus, true))
                 {
                     string line;
                     while ((line = sr.ReadLine()) != null)
@@ -100,10 +95,10 @@ namespace Athena
                 }
             }
 
-            var start = new FileInfo(OutputFile).Length;
-            using (var sr = new StreamReader(IngestFile))
+            var start = new FileInfo(Program.Path_Corpus_0).Length;
+            using (var sr = new StreamReader(Program.Path_Ingest))
             {
-                using (var sw = new StreamWriter(OutputFile, true))
+                using (var sw = new StreamWriter(Program.Path_Corpus_0, true))
                 {
                     string line;
                     while ((line = sr.ReadLine()) != null)
@@ -112,11 +107,11 @@ namespace Athena
                 }
             }
 
-            var stream = new FileStream(OutputFile, FileMode.Open);
+            var stream = new FileStream(Program.Path_Corpus_0, FileMode.Open);
             stream.Seek(start, SeekOrigin.Begin);
             using (var sr = new StreamReader(stream))
             {
-                using (var sw = new StreamWriter(FinalFile, true))
+                using (var sw = new StreamWriter(Program.Path_Corpus_1, true))
                 {
                     string line;
                     while ((line = sr.ReadLine()) != null)
@@ -134,13 +129,13 @@ namespace Athena
                     }
                 }
             }
-            File.Delete(IngestFile);
+            File.Delete(Program.Path_Ingest);
         }
 
         public static void ReplaceInFile(string pattern)
         {
             var checkpoint = DateTime.Now;
-            double length = new FileInfo(FinalFile).Length;
+            double length = new FileInfo(Program.Path_Corpus_1).Length;
             byte[] find = Encoding.ASCII.GetBytes(pattern);
             byte[] replace = Encoding.ASCII.GetBytes(pattern.Replace(' ', '_'));
             byte[] buffer = new byte[find.Length];
@@ -148,7 +143,7 @@ namespace Athena
             Console.WriteLine("Replacing text [{0:H:mm:ss}]", DateTime.Now);
             Console.WriteLine();
 
-            using (Stream stream = File.Open(FinalFile, FileMode.Open))
+            using (Stream stream = File.Open(Program.Path_Corpus_1, FileMode.Open))
             {
                 using (BufferedStream bs = new BufferedStream(stream, find.Length))
                 {

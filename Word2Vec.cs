@@ -25,7 +25,6 @@ namespace Athena
 
         private readonly Model _model;
         private readonly Random _rnd = new Random();
-        private const string InputFile = "corpus_1.txt";
         private int[,] _tokens = new int[SentenceBatches, 1 + SentencePositions];
         private float _learningRate = BaseLearningRate;
         private float[,] _gpuContext;
@@ -121,8 +120,8 @@ namespace Athena
             var start = DateTime.Now;
             var checkpoint = DateTime.Now;
             var wordCount = 0;
-            double length = new FileInfo(InputFile).Length;
-            using (var sr = new StreamReader(InputFile))
+            double length = new FileInfo(Program.Path_Corpus_1).Length;
+            using (var sr = new StreamReader(Program.Path_Corpus_1))
             {
                 string line;
                 while ((line = sr.ReadLine()) != null)
