@@ -10,9 +10,11 @@ namespace Athena
 {
     internal class Model : Dictionary<string, Model.Item>
     {
+        // Start hyperparameters.
         public const int Dims = 128;
         public const int MaxSize = (int)1e6;
         public const int MinCount = 32;
+        // End hyperparameters.
 
         private readonly Dictionary<string, string> _bigrams = new Dictionary<string, string>();
 

@@ -10,7 +10,10 @@ namespace Athena
 {
     internal class Word2Phrase
     {
+        // Start hyperparameters.
         private const int Threshold = 100;
+        // End hyperparameters.
+
         private readonly Dictionary<string, int> _vocab = new Dictionary<string, int>();
         private long _trainWords;
 
