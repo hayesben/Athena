@@ -29,7 +29,7 @@ namespace Athena
                 Console.Write("Load [L], Train [T], Test [E] or Query [Q] ");
                 var key = Console.ReadKey(true).Key;
                 Console.WriteLine("\r\n");
-                if (key == ConsoleKey.C)
+                if (key == ConsoleKey.L)
                 {
                     new Cleaner();
                     new Word2Phrase();
