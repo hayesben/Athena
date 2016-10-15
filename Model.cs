@@ -13,7 +13,7 @@ namespace Athena
         // Start hyperparameters.
         public const int Dims = 128;
         public const int MaxSize = (int)1e6;
-        public const int MinCount = 32;
+        public const int MinCount = 25;
         // End hyperparameters.
 
         private readonly Dictionary<string, string> _bigrams = new Dictionary<string, string>();
@@ -21,7 +21,6 @@ namespace Athena
         public Model(bool learnVocab)
         {
             if (learnVocab) LearnVocab();
-            LoadBigrams();
             LoadModel(learnVocab);
             Reduce();
 
@@ -37,20 +36,6 @@ namespace Athena
                 while ((line = sr.ReadLine()) != null)
                     if (line.Contains(phrase)) Console.WriteLine(line);
             Console.WriteLine();
-        }
-
-        private void LoadBigrams()
-        {
-            if (!File.Exists(Program.Path_Bigrams)) return;
-            string line;
-            using (var sr = new StreamReader(Program.Path_Bigrams))
-                while ((line = sr.ReadLine()) != null)
-                    if (!this.ContainsKey(line))
-                    {
-                        var item = new Item() { Count = MinCount };
-                        item.Seed();
-                        Add(line, item);
-                    }
         }
 
         public KeyValuePair<string, double>[] Nearest(string phrase, int count, bool context)
