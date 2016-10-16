@@ -13,29 +13,15 @@ namespace Athena
         // Start hyperparameters.
         public const int Dims = 128;
         public const int MaxSize = (int)1e6;
-        public const int MinCount = 25;
+        public const int PreTrainMin = 10;
+        public const int PostTrainMin = 30;
         // End hyperparameters.
-
-        private readonly Dictionary<string, string> _bigrams = new Dictionary<string, string>();
 
         public Model(bool learnVocab)
         {
             if (learnVocab) LearnVocab();
             LoadModel(learnVocab);
-            Reduce();
-
-            var keys = from k in Keys where k.Contains('_') select k;
-            foreach (var key in keys)
-                _bigrams.Add(key.Replace('_', ' '), key);
-        }
-
-        public void FindText(string phrase)
-        {
-            string line;
-            using (var sr = new StreamReader(Program.Path_Corpus_1))
-                while ((line = sr.ReadLine()) != null)
-                    if (line.Contains(phrase)) Console.WriteLine(line);
-            Console.WriteLine();
+            Reduce(PostTrainMin);
         }
 
         public KeyValuePair<string, double>[] Nearest(string phrase, int count, bool context)
@@ -110,12 +96,12 @@ namespace Athena
                         if (!ContainsKey(word)) Add(word, new Item { Count = 1 });
                         else this[word].Count++;
 
-                    if (Count > MaxSize) Reduce();
+                    if (Count > MaxSize) Reduce(PreTrainMin);
                     Console.Write("Progress: {0:0.000%}  \r", sr.BaseStream.Position / length);
                 }
             }
 
-            Reduce();
+            Reduce(PreTrainMin);
             foreach (var item in this) item.Value.Seed();
 
             Console.WriteLine("\r\n");
@@ -166,16 +152,10 @@ namespace Athena
             return sim / (float)(Math.Sqrt(len1) * Math.Sqrt(len2));
         }
 
-        public string[] Tokenise(string phrase)
-        {
-            phrase = _bigrams.Aggregate(phrase, (current, token) => current.Replace(token.Key, token.Value));
-            return phrase.Split(null as string[], StringSplitOptions.RemoveEmptyEntries);
-        }
-
         private float[] Vector(string phrase)
         {
             var vec = new float[Dims];
-            var keys = Tokenise(phrase);
+            var keys = phrase.Split(null as string[], StringSplitOptions.RemoveEmptyEntries);
             foreach (var k in keys)
             {
                 var sgn = 1;
@@ -196,10 +176,10 @@ namespace Athena
             return vec;
         }
 
-        private void Reduce()
+        private void Reduce(int threshold)
         {
             var keys = Keys.ToList();
-            foreach (var key in from key in keys let item = this[key] where item.Count < MinCount select key)
+            foreach (var key in from key in keys let item = this[key] where item.Count < threshold select key)
                 Remove(key);
         }
 

@@ -72,7 +72,7 @@ namespace Athena
             }
 
             var tmp = new List<int>();
-            var div = Math.Pow(Model.MinCount, 0.6);
+            var div = Math.Pow(Model.PreTrainMin, 0.6);
             foreach (var word in _model)
             {
                 var count = (int)(Math.Pow(word.Value.Count, 0.6) / div);
