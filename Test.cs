@@ -30,11 +30,6 @@ namespace Athena
             this.model = model;
             Console.WriteLine("Starting test [{0:H:mm:ss}]", DateTime.Now);
             Console.WriteLine();
-            Console.WriteLine("Hit 'Esc' to quit test early...");
-            Console.WriteLine();
-
-            var tokenSource = new CancellationTokenSource();
-            var token = tokenSource.Token;
 
             string line;
             var items = new List<string>();
@@ -46,17 +41,11 @@ namespace Athena
             var start = DateTime.Now;
             foreach (var item in items)
             {
-                Task.Factory.StartNew(() => ProcessItem(item, token));
+                Task.Factory.StartNew(() => ProcessItem(item));
                 Interlocked.Increment(ref threadCount);
 
                 var seconds = (DateTime.Now - start).TotalSeconds + 1;
                 Console.Write("Progress: {0:0.000%}  items/sec: {1:0.00}  \r", (double)count / total, count / seconds);
-
-                if (Console.KeyAvailable && (Console.ReadKey(true).Key == ConsoleKey.Escape))
-                {
-                    tokenSource.Cancel();
-                    break;
-                }
 
                 while (threadCount > 99) Thread.Sleep(250);
             }
@@ -68,16 +57,11 @@ namespace Athena
             Console.WriteLine();
         }
 
-        private void ProcessItem(string item, CancellationToken ct)
+        private void ProcessItem(string item)
         {
-            if (ct.IsCancellationRequested)
-            {
-                Interlocked.Decrement(ref threadCount);
-                return;
-            }
             var keys = item.Split(',');
             var phrase = string.Format("{0}: {1} {2}", keys[0], keys[1], keys[2]);
-            if (model.NearestWord(phrase) == keys[3]) Interlocked.Increment(ref correct);
+            if (model.Nearest(phrase) == keys[3]) Interlocked.Increment(ref correct);
             Interlocked.Increment(ref count);
             Interlocked.Decrement(ref threadCount);
         }

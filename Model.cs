@@ -13,20 +13,18 @@ namespace Athena
         // Start hyperparameters.
         public const int Dims = 128;
         public const int MaxSize = (int)1e6;
-        public const int PreTrainMin = 10;
-        public const int PostTrainMin = 30;
+        public const int TrainMin = 10;
+        public const int QueryMin = 30;
         // End hyperparameters.
 
         public Model(bool learnVocab)
         {
             if (learnVocab) LearnVocab();
-            LoadModel(learnVocab);
-            Reduce(PostTrainMin);
+            else LoadModel();
         }
 
-        public KeyValuePair<string, double>[] Nearest(string phrase, int count, bool context)
+        public KeyValuePair<string, double>[] Nearest(string phrase, int count)
         {
-            double sim;
             var vec = Vector(phrase);
             var bestd = new double[count];
             var bestw = new string[count];
@@ -35,8 +33,7 @@ namespace Athena
             foreach (var key in Keys)
             {
                 var tmp = this[key];
-                if (!context) sim = Similarity(vec, tmp.Location);
-                else sim = Similarity(vec, tmp.Context);
+                var sim = Similarity(vec, tmp.Vector);
                 for (var c = 0; c < count; c++)
                     if (sim > bestd[c])
                     {
@@ -58,10 +55,17 @@ namespace Athena
             return result;
         }
 
-        public string NearestWord(string phrase)
+        public string Nearest(string phrase)
         {
-            var results = Nearest(phrase, 1, false);
+            var results = Nearest(phrase, 1);
             return results.First().Key;
+        }
+
+        public void Reduce(int threshold)
+        {
+            var keys = Keys.ToList();
+            foreach (var key in from key in keys let item = this[key] where item.Count < threshold select key)
+                Remove(key);
         }
 
         public void Save()
@@ -96,20 +100,18 @@ namespace Athena
                         if (!ContainsKey(word)) Add(word, new Item { Count = 1 });
                         else this[word].Count++;
 
-                    if (Count > MaxSize) Reduce(PreTrainMin);
+                    if (Count > MaxSize) Reduce(TrainMin);
                     Console.Write("Progress: {0:0.000%}  \r", sr.BaseStream.Position / length);
                 }
             }
-
-            Reduce(PreTrainMin);
-            foreach (var item in this) item.Value.Seed();
+            Reduce(TrainMin);
 
             Console.WriteLine("\r\n");
             Console.WriteLine("Vocab size: {0}k", Count / 1000);
             Console.WriteLine();
         }
 
-        private void LoadModel(bool learnVocab)
+        private void LoadModel()
         {
             if (!File.Exists(Program.Path_Model)) return;
             Console.WriteLine("Loading model [{0:H:mm:ss}]", DateTime.Now);
@@ -129,7 +131,7 @@ namespace Athena
                 {
                     var key = br.ReadString();
                     if (!ContainsKey(key)) Add(key, new Item());
-                    this[key].Load(br, learnVocab);
+                    this[key].Load(br);
                 }
             }
         }
@@ -176,18 +178,9 @@ namespace Athena
             return vec;
         }
 
-        private void Reduce(int threshold)
-        {
-            var keys = Keys.ToList();
-            foreach (var key in from key in keys let item = this[key] where item.Count < threshold select key)
-                Remove(key);
-        }
-
         public class Item
         {
-            private static readonly Random Rnd = new Random();
-            public float[] Context = new float[Dims];
-            public float[] Location = new float[Dims];
+            public float[] Vector = new float[Dims];
             public int Count;
             public int ID;
 
@@ -196,36 +189,26 @@ namespace Athena
                 get
                 {
                     float len = 0;
-                    for (var i = 0; i < Dims; i++) len += Location[i] * Location[i];
+                    for (var i = 0; i < Dims; i++) len += Vector[i] * Vector[i];
                     len = (float)Math.Sqrt(len);
                     var normal = new float[Dims];
-                    for (var i = 0; i < Dims; i++) normal[i] = Location[i] / len;
+                    for (var i = 0; i < Dims; i++) normal[i] = Vector[i] / len;
                     return normal;
                 }
             }
 
-            public void Load(BinaryReader br, bool learnVocab)
+            public void Load(BinaryReader br)
             {
-                if (learnVocab) br.ReadInt32();
-                else Count = br.ReadInt32();
-                for (var i = 0; i < Dims; i++) Location[i] =br.ReadSingle();
-                for (var i = 0; i < Dims; i++) Context[i] = br.ReadSingle();
+                Count = br.ReadInt32();
+                for (var i = 0; i < Dims; i++)
+                    Vector[i] = br.ReadSingle();
             }
 
             public void Save(BinaryWriter bw)
             {
                 bw.Write(Count);
-                for (var i = 0; i < Dims; i++) bw.Write(Location[i]);
-                for (var i = 0; i < Dims; i++) bw.Write(Context[i]);
-            }
-
-            public void Seed()
-            {
                 for (var i = 0; i < Dims; i++)
-                {
-                    Context[i] = (float)(0.5 - Rnd.NextDouble());
-                    Location[i] = (float)(0.5 - Rnd.NextDouble());
-                }
+                    bw.Write(Vector[i]);
             }
         }
     }

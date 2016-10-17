@@ -102,7 +102,7 @@ namespace Athena
                             else oov = true;
 
                             double score = 0;
-                            if (!oov) score = (bigramCount - Model.PreTrainMin) / lastWordCount / wordCount * _trainWords;
+                            if (!oov) score = (bigramCount - Model.TrainMin) / lastWordCount / wordCount * _trainWords;
 
                             if (score > Threshold) sw.Write("_" + word);
                             else sw.Write(" " + word);
@@ -124,7 +124,7 @@ namespace Athena
         private void Reduce()
         {
             var keys = _vocab.Keys.ToList();
-            foreach (var key in keys.Where(key => _vocab[key] < Model.PreTrainMin))
+            foreach (var key in keys.Where(key => _vocab[key] < Model.TrainMin))
                 _vocab.Remove(key);
         }
     }

@@ -61,18 +61,16 @@ namespace Athena
             foreach (var item in _model)
             {
                 item.Value.ID = id;
-                var location = item.Value.Location;
-                var context = item.Value.Context;
                 for (var i = 0; i < Model.Dims; i++)
                 {
-                    arrayContext[id, i] = context[i];
-                    arrayLocation[id, i] = location[i];
+                    arrayContext[id, i] = (float)(0.5 - _rnd.NextDouble());
+                    arrayLocation[id, i] = (float)(0.5 - _rnd.NextDouble());
                 }
                 id++;
             }
 
             var tmp = new List<int>();
-            var div = Math.Pow(Model.PreTrainMin, 0.6);
+            var div = Math.Pow(Model.TrainMin, 0.6);
             foreach (var word in _model)
             {
                 var count = (int)(Math.Pow(word.Value.Count, 0.6) / div);
@@ -101,21 +99,15 @@ namespace Athena
             foreach (var item in _model)
             {
                 var id = item.Value.ID;
-                var location = item.Value.Location;
-                var context = item.Value.Context;
+                var location = item.Value.Vector;
                 for (var i = 0; i < Model.Dims; i++)
-                {
-                    context[i] = arrayContext[id, i];
                     location[i] = arrayLocation[id, i];
-                }
             }
         }
 
         private void Train(int iteration)
         {
             Console.WriteLine("Training model [{0:H:mm:ss}]", DateTime.Now);
-            Console.WriteLine();
-            Console.WriteLine("Hit 'Esc' to quit training early...");
             Console.WriteLine();
             var start = DateTime.Now;
             var checkpoint = DateTime.Now;
@@ -144,11 +136,9 @@ namespace Athena
                         var seconds = (DateTime.Now - start).TotalSeconds + 1;
                         var rate = wordCount / seconds / 1000.0;
                         _learningRate = BaseLearningRate - (iteration * BaseLearningRate / Iterations) - (progress * BaseLearningRate / Iterations);
-                        Console.Write("Progress: {0:0.000%}  words/sec: {1:0.000}k  learning rate: {2:0.000}  \r", progress, rate, _learningRate);
+                        Console.Write("Iteration {0}  Progress: {1:0.000%}  words/sec: {2:0.000}k  learning rate: {3:0.000}  \r", iteration, progress, rate, _learningRate);
                         checkpoint = DateTime.Now.AddSeconds(1);
                     }
-
-                    if (Console.KeyAvailable && (Console.ReadKey(true).Key == ConsoleKey.Escape)) break;
                 }
             }
             Console.WriteLine("\r\n");
@@ -172,7 +162,7 @@ namespace Athena
             {
                 _sentence = 0;
                 _gpu.CopyToConstantMemory(_tokens, Tokens);
-                _gpu.Launch(SentenceBatches * SentencePositions, Model.Dims).Execute(_gpuContext, _gpuLocation, _gpuRoulette, _rouletteLength, _rnd.Next(99999), learningRate);
+                _gpu.Launch(SentenceBatches * SentencePositions, Model.Dims).CBOW(_gpuContext, _gpuLocation, _gpuRoulette, _rouletteLength, _rnd.Next(99999), learningRate);
                 _tokens = new int[SentenceBatches, 1 + SentencePositions];
             }
         }
@@ -181,7 +171,7 @@ namespace Athena
         public static int[,] Tokens = new int[SentenceBatches, 1 + SentencePositions];
 
         [Cudafy]
-        public static void Execute(GThread thread, float[,] context, float[,] location, int[] roulette, int rouletteLength, int seed, float learningRate)
+        public static void CBOW(GThread thread, float[,] context, float[,] location, int[] roulette, int rouletteLength, int seed, float learningRate)
         {
             float[] activation = thread.AllocateShared<float>("activation", Model.Dims);
             float[] error = thread.AllocateShared<float>("error", Model.Dims);

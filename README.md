@@ -14,30 +14,47 @@ Next, Athena will identify common recurring bigrams and concatenate these into p
 
 The proceeding steps, which will take several hours to run, need only be executed once – now the training can begin.
 
-By selecting the ***Train [T]*** option, Athena will use the cleaned corpus file to generate a word embedding model on the GPU – this will be stored in ***model.bin***. If training has taken place before, Athena will attempt to load the existing model and continue training from the current state.  If not, Athena will learn the vocabulary and build a seeded, but untrained, model file and start training from here.
+By selecting the ***Train [T]*** option, Athena will use the cleaned corpus file to generate a word embedding model on the GPU – this will be stored in ***model.bin***. If training on this corpus has taken place before, Athena will load the existing vocabulary.  If not, Athena will first learn the vocabulary and start training from here.
 
 To query the model, simply select the ***Query [Q]*** option and type in a word or phrase.
 
-For example, typing in the word *write* will return related words and also its context.
+For example, typing in the word *paris* will return cities similar to Paris:
 
 ```
-? write
+? paris
 
-Neighbours                              Context
--------------------                     -------------------
-1.00  write                             0.51  to
-0.80  compose                           0.40  would
-0.78  memorize                          0.39  could
-0.76  teach                             0.36  must
-0.76  publish                           0.33  might
-0.75  do_something                      0.29  does_not
-0.75  deliver                           0.28  may
-0.74  transcribe                        0.28  can
-0.73  submit                            0.27  did_not
-0.73  learn                             0.26  wouldnt
+Nearest
+-------------------
+1.00  paris
+0.81  brussels
+0.73  vienna
+0.71  munich
+0.71  marseilles
+0.70  turin
+0.69  strasbourg
+0.69  madrid
+0.69  geneva
+0.68  london
 ```
 
-It is also perform vector subtraction by appending a colon to the end of the word to negate. For example *france: paris italy* is the equivalent of asking Athena *France is to Paris as Italy is to...?* – this should return Rome.
+It is also perform vector subtraction by appending a colon to the end of the word to negate. For example *paris: france oslo* is the equivalent of asking Athena *Paris is to France as Oslo is to...?* – this should return *Norway* as the top answer:
+
+```
+? paris: france oslo
+
+Nearest
+-------------------
+0.87  norway
+0.78  finland
+0.75  denmark
+0.75  iceland
+0.74  sweden
+0.73  finnmark
+0.72  trondheim
+0.71  tromso
+0.71  estonia
+0.71  oslo
+```
 
 To carry out an exhaustive test of the model, select the ***Test [E]*** option. This will load comma seperated analogies from the ***test.csv*** file. These should be in the form of *athens,greece,baghdad,iraq*.
 
