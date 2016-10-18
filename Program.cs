@@ -17,7 +17,7 @@ namespace Athena
         public const string Path_Corpus_0 = @".\Data\corpus_0.txt";
         public const string Path_Corpus_1 = @".\Data\corpus_1.txt";
         public const string Path_Model = @".\Data\model.bin";
-        public const string Path_Test = @".\Data\test.csv";
+        public const string Path_Test = @".\Data\test.txt";
 
         public static void Main(string[] args)
         {

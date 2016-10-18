@@ -9,11 +9,11 @@ using System.Threading.Tasks;
 
 namespace Athena
 {
-    // The test file is formatted in the form of comma seperated analogies - for example:
-    // athens,greece,baghdad,iraq
-    // athens,greece,bangkok,thailand
-    // athens,greece,beijing,china
-    // athens,greece,berlin,germany
+    // The test file is formatted in the form of analogies - for example:
+    // athens greece baghdad iraq
+    // athens greece bangkok thailand
+    // athens greece beijing china
+    // athens greece berlin germany
     // ...
     // A great source can be found here:
     // http://download.tensorflow.org/data/questions-words.txt
@@ -61,7 +61,7 @@ namespace Athena
 
         private void ProcessItem(string item)
         {
-            var keys = item.Split(',');
+            var keys = item.Split(' ');
             var phrase = string.Format("{0}: {1} {2}", keys[0], keys[1], keys[2]);
             if (model.Nearest(phrase) == keys[3]) Interlocked.Increment(ref correct);
             Interlocked.Increment(ref count);

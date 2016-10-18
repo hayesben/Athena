@@ -8,7 +8,7 @@ This is a GPU accelerated C# implementation, which provides a full environment t
 
 Athena works with either CUDA or OpenCL devices and will auto-select depending on your hardware. A reference to Cudafy.NET is required, which can be downloaded from [GitHub](https://github.com/svn2github/cudafy).  
 
-To get started, select the ***Load [L]*** option which will load your corpus file located in sub folder named ***Data*** under compiled application folder – I use a 6GB full text dump of Wikipedia - this file must be called ***corpus.txt***.
+To get started, select the ***Load [L]*** option which will load your corpus file located in the data folder – I use a 6GB full text dump of Wikipedia - this file must be called ***corpus.txt***.
 
 Athena then cleans up the corpus file, transforming text to lower case, standardising diacritics and converting numerics to tokens - the resulting text will be saved as ***corpus_0.txt***.
 
@@ -60,7 +60,7 @@ Nearest
 0.71  oslo
 ```
 
-To carry out an exhaustive test of the model, select the ***Test [T]*** option. This will load comma seperated analogies from the ***test.csv*** file. These should be in the form of *athens,greece,baghdad,iraq*.
+To carry out an exhaustive test of the model, select the ***Test [T]*** option. This will load analogies from the ***test.txt*** file. These should be in the form of *athens greece baghdad iraq*.
 
 Let me know how you get on...
 
