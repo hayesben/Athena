@@ -14,6 +14,7 @@ namespace Athena
     internal class Word2Vec
     {
         // Start hyperparameters.
+        private const bool USE_CBOW = true;
         private const float BaseLearningRate = 0.05f;
         private const double SubSample = 1e-8;
         private const int Iterations = 5;
@@ -162,7 +163,10 @@ namespace Athena
             {
                 _sentence = 0;
                 _gpu.CopyToConstantMemory(_tokens, Tokens);
-                _gpu.Launch(SentenceBatches * SentencePositions, Model.Dims).CBOW(_gpuContext, _gpuLocation, _gpuRoulette, _rouletteLength, _rnd.Next(99999), learningRate);
+                if (USE_CBOW)
+                    _gpu.Launch(SentenceBatches * SentencePositions, Model.Dims).CBOW(_gpuContext, _gpuLocation, _gpuRoulette, _rouletteLength, _rnd.Next(99999), learningRate);
+                else
+                    _gpu.Launch(SentenceBatches * SentencePositions, Model.Dims).SGNS(_gpuContext, _gpuLocation, _gpuRoulette, _rouletteLength, _rnd.Next(99999), learningRate);
                 _tokens = new int[SentenceBatches, 1 + SentencePositions];
             }
         }
@@ -171,6 +175,7 @@ namespace Athena
         public static int[,] Tokens = new int[SentenceBatches, 1 + SentencePositions];
 
         [Cudafy]
+        // Predict a word given its context.
         public static void CBOW(GThread thread, float[,] context, float[,] location, int[] roulette, int rouletteLength, int seed, float learningRate)
         {
             float[] activation = thread.AllocateShared<float>("activation", Model.Dims);
@@ -258,6 +263,83 @@ namespace Athena
                     if (w == Window) continue;
 
                     location[Tokens[sentence, p + 1], dim] += error[dim];
+                }
+            }
+        }
+
+        [Cudafy]
+        // Predict the context given a word. 
+        public static void SGNS(GThread thread, float[,] context, float[,] location, int[] roulette, int rouletteLength, int seed, float learningRate)
+        {
+            float[] activation = thread.AllocateShared<float>("activation", Model.Dims);
+            float[] error = thread.AllocateShared<float>("error", Model.Dims);
+            float[] g = thread.AllocateShared<float>("g", 1);
+            int[] crop = thread.AllocateShared<int>("crop", 1);
+            int[] negID = thread.AllocateShared<int>("negID", 1);
+
+            int sentence = thread.blockIdx.x / SentencePositions;
+            int position = thread.blockIdx.x - sentence * SentencePositions;
+            int dim = thread.threadIdx.x;
+
+            int len = Tokens[sentence, 0];
+            if (position <= len)
+            {
+                uint random = (uint)(seed + position);
+                if (dim == 0)
+                {
+                    random = random * 1664525u + 1013904223u;
+                    crop[0] = (int)(random % Window);
+                }
+                thread.SyncThreads();
+
+                for (var w = crop[0]; w < Window * 2 + 1 - crop[0]; w++)
+                {
+                    if (w != Window)
+                    {
+                        var p = position - Window + w;
+                        if ((p < 0) || (p >= len)) continue;
+
+                        error[dim] = 0;
+                        for (int n = 0; n < NegativeSamples + 1; n++)
+                        {
+                            if (dim == 0)
+                            {
+                                random = random * 1664525u + 1013904223u;
+                                negID[0] = roulette[random % rouletteLength];
+                            }
+                            thread.SyncThreads();
+
+                            int targetID = negID[0];
+                            if (n == 0) targetID = Tokens[sentence, p + 1];
+
+                            activation[dim] = location[Tokens[sentence, position + 1], dim] * context[targetID, dim];
+                            thread.SyncThreads();
+
+                            int j = Model.Dims / 2;
+                            while (j != 0)
+                            {
+                                if (dim < j) activation[dim] += activation[dim + j];
+                                thread.SyncThreads();
+                                j /= 2;
+                            }
+
+                            if ((n != 0 || activation[0] <= 5f) && (n == 0 || activation[0] >= -5f))
+                            {
+                                if (dim == 0)
+                                {
+                                    int label = 0;
+                                    if (n == 0) label = 1;
+                                    g[0] = (label - 1 / (1 + GMath.Exp(-activation[0]))) * learningRate;
+                                }
+                                thread.SyncThreads();
+
+                                error[dim] += g[0] * context[targetID, dim];
+                                context[targetID, dim] += g[0] * location[Tokens[sentence, position + 1], dim];
+                            }
+                            thread.SyncThreads();
+                        }
+                        location[Tokens[sentence, position + 1], dim] += error[dim];
+                    }
                 }
             }
         }

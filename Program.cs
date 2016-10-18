@@ -30,21 +30,21 @@ namespace Athena
 
             while (true)
             {
-                Console.Write("Load [L], Train [T], Test [E] or Query [Q] ");
-                var key = Console.ReadKey(true).Key;
+                Console.Write("Load & Train [L], Retrain [R], Test [T] or Query [Q] ");
+                var key = Console.ReadLine().ToUpper();
                 Console.WriteLine("\r\n");
-                if (key == ConsoleKey.L)
+                if (key == "L")
                 {
                     new Cleaner();
                     new Word2Phrase();
                     new Word2Vec(true);
                 }
 
-                if (key == ConsoleKey.T) new Word2Vec(false);
+                if (key == "R") new Word2Vec(false);
 
-                if (key == ConsoleKey.E) new Test(new Model(false));
+                if (key == "T") new Test(new Model(false));
 
-                if (key == ConsoleKey.Q)
+                if (key == "Q")
                 {
                     var model = new Model(false);
                     model.Reduce(Model.QueryMin);

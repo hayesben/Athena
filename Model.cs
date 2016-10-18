@@ -113,7 +113,12 @@ namespace Athena
 
         private void LoadModel()
         {
-            if (!File.Exists(Program.Path_Model)) return;
+            if (!File.Exists(Program.Path_Model))
+            {
+                Console.WriteLine("Model file not found!");
+                Console.WriteLine();
+                return;
+            }
             Console.WriteLine("Loading model [{0:H:mm:ss}]", DateTime.Now);
             Console.WriteLine();
             using (var br = new BinaryReader(File.Open(Program.Path_Model, FileMode.Open)))

@@ -28,6 +28,8 @@ namespace Athena
         public Test(Model model)
         {
             this.model = model;
+            this.model.Reduce(Model.QueryMin);
+
             Console.WriteLine("Starting test [{0:H:mm:ss}]", DateTime.Now);
             Console.WriteLine();
 

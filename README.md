@@ -2,6 +2,8 @@
 
 Athena is a word embedding program based on the original paper *Efficient Estimation of Word Representations in Vector Space* published by Tomas Mikolov in January 2013.
 
+The application will generate embeddings using either the *Continuous Bag of Words* (CBOW) or *Skip Gram with Negative Sampling* (SGNS) models.
+
 This is a GPU accelerated C# implementation, which provides a full environment to manage a large text corpus and subsequently learn and query word embeddings. To the best of my knowledge, this is the only implementation of word2vec on a GPU using C#.
 
 Athena works with either CUDA or OpenCL devices and will auto-select depending on your hardware. A reference to Cudafy.NET is required, which can be downloaded from [GitHub](https://github.com/svn2github/cudafy).  
@@ -12,9 +14,11 @@ Athena then cleans up the corpus file, transforming text to lower case, standard
 
 Next, Athena will identify common recurring bigrams and concatenate these into phrases – the result will be saved as ***corpus_1.txt*** - this process is heuristic and may therefore omit some bigrams. To guarantee the occurrence of particular bigrams in your corpus it is possible to force addition - create a ***bigrams.txt*** file and populate each row with a required bigram in the form of *hillary_clinton*, *donald_trump*, etc.
 
-The proceeding steps, which will take several hours to run, need only be executed once – now the training can begin.
+The proceeding steps, which will take several hours to run, need only be executed once – the first round of training will now commence automatically.
 
-By selecting the ***Train [T]*** option, Athena will use the cleaned corpus file to generate a word embedding model on the GPU – this will be stored in ***model.bin***. If training on this corpus has taken place before, Athena will load the existing vocabulary.  If not, Athena will first learn the vocabulary and start training from here.
+The word embedding model will be stored in ***model.bin***.
+
+Once an intial round has completed, you may wish to tweak the hyperparameters and try again. Do this by selecting the ***Retrain [R]*** option.
 
 To query the model, simply select the ***Query [Q]*** option and type in a word or phrase.
 
@@ -56,7 +60,7 @@ Nearest
 0.71  oslo
 ```
 
-To carry out an exhaustive test of the model, select the ***Test [E]*** option. This will load comma seperated analogies from the ***test.csv*** file. These should be in the form of *athens,greece,baghdad,iraq*.
+To carry out an exhaustive test of the model, select the ***Test [T]*** option. This will load comma seperated analogies from the ***test.csv*** file. These should be in the form of *athens,greece,baghdad,iraq*.
 
 Let me know how you get on...
 
